@@ -3,9 +3,6 @@
   "version": "0.0.1",
   "description": "An open source API to interface with ChessNut Air board.",
   "main": "lib/index.js",
-  "exports": {
-    "./": "./lib/"
-  },
   "types": "lib/index.d.ts",
   "files": [
     "lib/**/*"
