@@ -3,14 +3,17 @@
   "version": "0.0.1",
   "description": "An open source API to interface with ChessNut Air board.",
   "main": "lib/index.js",
+  "exports": {
+    "./": "./lib/"
+  },
   "types": "lib/index.d.ts",
   "files": [
     "lib/**/*"
   ],
   "scripts": {
     "test": "jest --config jestconfig.json",
-    "dev": "nodemon src/index.ts",
-    "build": "tsc",
+    "dev": "sudo nodemon src/index.ts",
+    "build": "rm -rf ./lib && tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
