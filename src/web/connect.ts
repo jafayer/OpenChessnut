@@ -1,14 +1,24 @@
-export async function connectHID() {
+import { HIDFilters, start } from "../utils/consts";
+
+export async function connectHID(callback?: CallableFunction) {
     const [device] = await navigator.hid.requestDevice({
-        filters: [
-            { vendorId: 0x2d80, productId: 0x8001 },
-            { vendorId: 0x2d80, productId: 0x8002 },
-        ],
+        filters: HIDFilters,
     });
 
-    return device;
-}
+    if(device) {
+        await device.open();
+        await device.sendReport(start[0], start[1]);
 
-export function connectBluetooth() {
+        if(callback) {
+            callback(device);
+        }
     
+        return device;
+    } else {
+        if(callback) {
+            callback(undefined);
+        }
+
+        return undefined;
+    }
 }
