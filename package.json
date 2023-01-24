@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "test": "jest --config jestconfig.json",
-    "dev": "sudo nodemon src/index.ts",
+    "dev": "nodemon src/index.ts",
     "build": "rm -rf ./lib && tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
