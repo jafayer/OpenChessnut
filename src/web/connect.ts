@@ -1,4 +1,4 @@
-import { HIDFilters, start } from '../utils/consts';
+import { HIDFilters } from '../utils/consts';
 
 export async function connectHID(callback?: CallableFunction) {
   const [device] = await navigator.hid.requestDevice({
@@ -7,7 +7,6 @@ export async function connectHID(callback?: CallableFunction) {
 
   if (device) {
     await device.open();
-    await device.sendReport(start[0], start[1]);
 
     if (callback) {
       callback(device);
