@@ -1,6 +1,7 @@
 import type { HID } from 'node-hid';
 import type { Platforms } from '../utils/types';
 import { Constants } from '../utils/consts';
+import { convertToBytes } from '../utils/baseConversion';
 
 type device = HIDDevice | HID;
 
@@ -8,12 +9,12 @@ export class Chessnut {
   device;
   platform: Platforms;
 
-  constructor(device: HID | HIDDevice) {
-    this.device = device;
-    this.platform = isWeb(device) ? 'Web' : 'Server';
+  constructor(d: HID | HIDDevice) {
+    this.device = d;
+    this.platform = isWeb(this.device) ? 'Web' : 'Server';
     this.open();
   }
-  
+
   private async open() {
     const headers = Constants.getRealtimeHeaders();
     if (isWeb(this.device)) {
@@ -23,42 +24,23 @@ export class Chessnut {
     }
   }
 
-  private extractNibbles(uiarr: Uint8Array): Array<number> {
-    const arr = Array.from(uiarr);
-    const stuff = arr.map((byte) => {
-      return this.convertToNibbles(byte, 2, false);
-    });
-
-    return stuff.flat();
+  private async listen() {
+    if (isWeb(this.device)) {
+      this.device.addEventListener('inputreport', (event) => {
+        const { data, reportId } = event;
+        const { productId } = event.device;
+        if (reportId === 1 && Constants.productIds.includes(productId)) {
+          // set board state
+        }
+      });
+    } else if (isServer(this.device)) {
+      this.device.on('data', (event) => {
+        // check that it's the correct board event
+      });
+    }
   }
 
-  private convertToBase =
-    (base: number) =>
-    (number: number, minLength: number, bigEndian: boolean = true) => {
-      let arr = [];
-      while (number > 0) {
-        const remainder = number % base;
-        number = Math.floor(number / base);
-
-        arr.push(remainder);
-      }
-
-      while (arr.length < minLength) {
-        arr.push(0);
-      }
-
-      if (bigEndian) {
-        return arr.reverse();
-      } else {
-        return arr;
-      }
-    };
-
-  private convertToBytes = this.convertToBase(256);
-
-  private convertToNibbles = this.convertToBase(16);
-
-  private convertToBinary = this.convertToBase(2);
+  private convertToBytes = convertToBytes;
 }
 
 function isWeb(board: HIDDevice | HID): board is HIDDevice {
