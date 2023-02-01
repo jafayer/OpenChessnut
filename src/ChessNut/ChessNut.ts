@@ -1,18 +1,21 @@
 import type { HID } from 'node-hid';
 import type { Platforms } from '../utils/types';
 import { Constants } from '../utils/consts';
-import { convertToBytes } from '../utils/baseConversion';
+import { convertToNibbles } from '../utils/baseConversion';
+import { BehaviorSubject} from 'rxjs';
 
 type device = HIDDevice | HID;
 
-export class Chessnut {
+export class ChessNut {
   device;
   platform: Platforms;
+  state: BehaviorSubject<number[]>;
 
   constructor(d: HID | HIDDevice) {
     this.device = d;
     this.platform = isWeb(this.device) ? 'Web' : 'Server';
     this.open();
+    this.state = new BehaviorSubject<number[]>([]);
   }
 
   private async open() {
@@ -24,23 +27,34 @@ export class Chessnut {
     }
   }
 
-  private async listen() {
+  async listen() {
     if (isWeb(this.device)) {
       this.device.addEventListener('inputreport', (event) => {
         const { data, reportId } = event;
         const { productId } = event.device;
         if (reportId === 1 && Constants.productIds.includes(productId)) {
-          // set board state
+          const uiarr = new Uint8Array(data.buffer.slice(1,33));
+          const nibbles = this.extractNibbles(uiarr);
+          this.state.next(nibbles);
         }
       });
     } else if (isServer(this.device)) {
       this.device.on('data', (event) => {
-        // check that it's the correct board event
+        const uiarr = new Uint8Array(event);
+        if(uiarr.length === 63) {
+          const nibbles = this.extractNibbles(uiarr.slice(2,34));
+          this.state.next(nibbles);
+        }
       });
     }
   }
 
-  private convertToBytes = convertToBytes;
+  private extractNibbles(uiarr: Uint8Array): number[] {
+    const arr = Array.from(uiarr);
+    // every Nibble should represent two pieces
+    const nibbleArr = arr.map((byte) => convertToNibbles(byte, 2, false));
+    return nibbleArr.flat();
+  }
 }
 
 function isWeb(board: HIDDevice | HID): board is HIDDevice {
