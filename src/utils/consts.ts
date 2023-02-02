@@ -32,9 +32,9 @@ export class Constants {
     const headers = this.data.ledHeader.slice();
     headers.push(...data);
     return {
-      Web: this.convertReport(headers, "Web") as [number, Uint8Array],
+      Web: this.convertReport(headers, 'Web') as [number, Uint8Array],
       Server: this.data.realtime,
-    }
+    };
   }
 
   /**
