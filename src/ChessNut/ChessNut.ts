@@ -3,7 +3,6 @@ import type { Platforms, PieceString } from '../utils/types';
 import { Constants } from '../utils/consts';
 import { convertToNibbles } from '../utils/baseConversion';
 import { BehaviorSubject } from 'rxjs';
-import { pieceMap } from '../utils/pieceConversion';
 import { convertNibbleToPiece } from '../utils/pieceConversion';
 
 type device = HIDDevice | HID;
