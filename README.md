@@ -16,7 +16,7 @@ or
 
 `import {connect} from "@jafayer/chessnut/web"`;
 
-These functions optinally take a callback, or just return the HID reference synchronously. Most of the time, you'll want to immediately wrap the HID device in the ChessNut class:
+These functions optionally take a callback, or just return the HID reference synchronously. Most of the time, you'll want to immediately wrap the HID device in the ChessNut class:
 
 ```javascript
 import {ChessNut} from "@jafayer/chessnut";
