@@ -1,21 +1,23 @@
 import type { HID } from 'node-hid';
-import type { Platforms } from '../utils/types';
+import type { Platforms, PieceString } from '../utils/types';
 import { Constants } from '../utils/consts';
 import { convertToNibbles } from '../utils/baseConversion';
-import { BehaviorSubject} from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import { pieceMap } from '../utils/pieceConversion';
+import { convertNibbleToPiece } from '../utils/pieceConversion';
 
 type device = HIDDevice | HID;
 
 export class ChessNut {
   device;
   platform: Platforms;
-  state: BehaviorSubject<number[]>;
+  state: BehaviorSubject<PieceString[]>;
 
   constructor(d: HID | HIDDevice) {
     this.device = d;
     this.platform = isWeb(this.device) ? 'Web' : 'Server';
     this.open();
-    this.state = new BehaviorSubject<number[]>([]);
+    this.state = new BehaviorSubject<PieceString[]>([]);
   }
 
   private async open() {
@@ -33,17 +35,21 @@ export class ChessNut {
         const { data, reportId } = event;
         const { productId } = event.device;
         if (reportId === 1 && Constants.productIds.includes(productId)) {
-          const uiarr = new Uint8Array(data.buffer.slice(1,33));
+          // UIarr is h8..a1
+          const uiarr = new Uint8Array(data.buffer).slice(1, 33);
           const nibbles = this.extractNibbles(uiarr);
-          this.state.next(nibbles);
+          const pieces = nibbles.map(convertNibbleToPiece).reverse();
+          this.state.next(pieces);
         }
       });
     } else if (isServer(this.device)) {
       this.device.on('data', (event) => {
         const uiarr = new Uint8Array(event);
-        if(uiarr.length === 63) {
-          const nibbles = this.extractNibbles(uiarr.slice(2,34));
-          this.state.next(nibbles);
+        if (uiarr.length === 63) {
+          // uiarr is h8..a1
+          const nibbles = this.extractNibbles(uiarr.slice(2, 34));
+          const pieces = nibbles.map(convertNibbleToPiece).reverse();
+          this.state.next(pieces);
         }
       });
     }
