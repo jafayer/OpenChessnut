@@ -1,9 +1,11 @@
 import type { HID } from 'node-hid';
 import type { Platforms, PieceString } from '../utils/types';
+import { isWeb, isServer } from '../utils/types';
 import { Constants } from '../utils/consts';
 import { convertToNibbles } from '../utils/baseConversion';
 import { BehaviorSubject } from 'rxjs';
 import { convertNibbleToPiece } from '../utils/pieceConversion';
+import { LightsController } from '../utils/LightsController';
 
 type device = HIDDevice | HID;
 
@@ -11,12 +13,14 @@ export class ChessNut {
   device;
   platform: Platforms;
   state: BehaviorSubject<PieceString[]>;
+  lights: LightsController;
 
   constructor(d: HID | HIDDevice) {
     this.device = d;
     this.platform = isWeb(this.device) ? 'Web' : 'Server';
     this.open();
     this.state = new BehaviorSubject<PieceString[]>([]);
+    this.lights = new LightsController(this.device);
   }
 
   private async open() {
@@ -60,12 +64,4 @@ export class ChessNut {
     const nibbleArr = arr.map((byte) => convertToNibbles(byte, 2, false));
     return nibbleArr.flat();
   }
-}
-
-function isWeb(board: HIDDevice | HID): board is HIDDevice {
-  return (board as HIDDevice).sendReport !== undefined;
-}
-
-function isServer(board: HIDDevice | HID): board is HID {
-  return (board as HID).write !== undefined;
 }

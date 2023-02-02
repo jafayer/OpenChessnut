@@ -28,6 +28,15 @@ export class Constants {
     };
   }
 
+  static getLightsHeaders(data: number[]) {
+    const headers = this.data.ledHeader.slice();
+    headers.push(...data);
+    return {
+      Web: this.convertReport(headers, "Web") as [number, Uint8Array],
+      Server: this.data.realtime,
+    }
+  }
+
   /**
    * Reports have a different format but largely the same data.
    * This function accepts data and a platform and prepares the
